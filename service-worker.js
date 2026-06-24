@@ -1,4 +1,4 @@
-const CACHE = "weerwijzer-v1";
+const CACHE = "weerwijzer-v2";
 const SHELL = [
   "./",
   "./index.html",

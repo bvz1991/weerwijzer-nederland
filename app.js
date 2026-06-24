@@ -22,6 +22,11 @@ const fmt = (value, decimals = 0, suffix = "") =>
     ? "–" : `${Number(value).toFixed(decimals).replace(".", ",")}${suffix}`;
 const weatherInfo = code => CODES[Number(code)] || ["Onbekend","🌡️"];
 const windDirection = deg => ["N","NO","O","ZO","Z","ZW","W","NW"][Math.round(Number(deg || 0) / 45) % 8];
+const hourlyIcon = (code, isDay) => {
+  const numericCode = Number(code);
+  if (Number(isDay) === 0 && numericCode <= 2) return numericCode === 2 ? "☾" : "🌙";
+  return weatherInfo(numericCode)[1];
+};
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
 const placeLabel = place => [...new Set([place.name, place.admin1, place.country].filter(Boolean))].join(", ");
 
@@ -44,7 +49,7 @@ function weatherUrl(place) {
     timezone: "auto",
     forecast_days: "7",
     current: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
-    hourly: "temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility,uv_index",
+    hourly: "temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,uv_index",
     daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max"
   });
   return `https://api.open-meteo.com/v1/forecast?${params}`;
@@ -83,6 +88,8 @@ function renderWeather() {
   $("#gustNow").textContent = fmt(current.wind_gusts_10m, 0, " km/u");
   $("#humidityNow").textContent = fmt(current.relative_humidity_2m, 0, "%");
   renderForecast(daily);
+  renderHourlyStrip(weatherData.hourly);
+  renderHourlyDays(weatherData.hourly);
   renderRainChart(weatherData.hourly);
   renderDetails(current, daily);
 }
@@ -120,6 +127,93 @@ function renderRainChart(hourly) {
       <div class="rain-bar" style="height:${rainHeight}%"></div>
       <span class="rain-label">${label}</span>
     </div>`;
+  }).join("");
+}
+
+function hourlyStartIndex(hourly) {
+  const now = Date.now();
+  const index = hourly.time.findIndex(value => new Date(value).getTime() >= now - 30 * 60 * 1000);
+  return index < 0 ? 0 : index;
+}
+
+function hourlyPoint(hourly, index) {
+  return {
+    time: hourly.time[index],
+    temperature: hourly.temperature_2m[index],
+    feels: hourly.apparent_temperature[index],
+    rain: hourly.precipitation[index],
+    chance: hourly.precipitation_probability[index],
+    code: hourly.weather_code[index],
+    isDay: hourly.is_day[index],
+    wind: hourly.wind_speed_10m[index],
+    windDirection: hourly.wind_direction_10m[index],
+    gust: hourly.wind_gusts_10m[index]
+  };
+}
+
+function renderHourlyStrip(hourly) {
+  const start = hourlyStartIndex(hourly);
+  const points = hourly.time.slice(start, start + 12).map((_, offset) => hourlyPoint(hourly, start + offset));
+  $("#hourlyPreviewTitle").textContent = `Komende uren in ${currentPlace.name || "jouw plaats"}`;
+  $("#hourlyStrip").innerHTML = points.map((point, index) => {
+    const date = new Date(point.time);
+    const label = index === 0 ? "Nu" : date.toLocaleTimeString("nl-NL", {hour:"2-digit", minute:"2-digit"});
+    const description = weatherInfo(point.code)[0];
+    return `<article class="hour-card" title="${escapeHtml(description)}">
+      <strong class="hour-time">${label}</strong>
+      <span class="hour-icon">${hourlyIcon(point.code, point.isDay)}</span>
+      <strong>${fmt(point.temperature,0,"°C")}</strong>
+      <span>${windDirection(point.windDirection)} ${fmt(point.wind,0," km/u")}</span>
+      <span class="hour-rain">${fmt(point.rain,1," mm")}</span>
+      <small>${fmt(point.chance,0,"% kans")}</small>
+    </article>`;
+  }).join("");
+}
+
+function renderHourlyDays(hourly) {
+  const start = hourlyStartIndex(hourly);
+  const groups = new Map();
+  hourly.time.slice(start).forEach((_, offset) => {
+    const point = hourlyPoint(hourly, start + offset);
+    const key = point.time.slice(0,10);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(point);
+  });
+
+  $("#hourlyDays").innerHTML = [...groups.entries()].slice(0,5).map(([dateText, points], dayIndex) => {
+    const date = new Date(`${dateText}T12:00:00`);
+    const dayLabel = dayIndex === 0
+      ? `Vandaag · ${date.toLocaleDateString("nl-NL",{day:"numeric",month:"long"})}`
+      : date.toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"});
+    const rows = points.map((point, pointIndex) => {
+      const dateTime = new Date(point.time);
+      const time = dayIndex === 0 && pointIndex === 0
+        ? `Nu · ${dateTime.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}`
+        : dateTime.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"});
+      return `<tr>
+        <th scope="row">${time}</th>
+        <td class="weather-cell" title="${escapeHtml(weatherInfo(point.code)[0])}">${hourlyIcon(point.code, point.isDay)}</td>
+        <td><strong>${fmt(point.temperature,0,"°C")}</strong></td>
+        <td>${fmt(point.feels,0,"°C")}</td>
+        <td><strong>${fmt(point.rain,1," mm")}</strong></td>
+        <td>${fmt(point.chance,0,"%")}</td>
+        <td><span class="wind-value">${windDirection(point.windDirection)} ${fmt(point.wind,0," km/u")}</span>
+          <span class="wind-arrow" style="transform:rotate(${Number(point.windDirection || 0)}deg)">↓</span></td>
+        <td>${fmt(point.gust,0," km/u")}</td>
+      </tr>`;
+    }).join("");
+    return `<details class="hourly-day" ${dayIndex === 0 ? "open" : ""}>
+      <summary>
+        <span>${dayLabel}</span>
+        <small>${fmt(Math.min(...points.map(point => Number(point.temperature))),0,"°")} – ${fmt(Math.max(...points.map(point => Number(point.temperature))),0,"°")}</small>
+      </summary>
+      <div class="hour-table-wrap">
+        <table class="hour-table">
+          <thead><tr><th>Tijd</th><th>Weer</th><th>Temp.</th><th>Gevoel</th><th>Neerslag</th><th>Kans</th><th>Wind</th><th>Stoten</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </details>`;
   }).join("");
 }
 
@@ -228,6 +322,14 @@ function setupTabs() {
   $$(".tab").forEach(button => button.addEventListener("click", () => {
     $$(".tab").forEach(tab => tab.classList.toggle("active", tab === button));
     $$(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === button.dataset.tab));
+  }));
+  $$("[data-open-tab]").forEach(button => button.addEventListener("click", () => {
+    const target = button.dataset.openTab;
+    const tab = $(`.tab[data-tab="${target}"]`);
+    if (tab) {
+      tab.click();
+      tab.scrollIntoView({behavior:"smooth", block:"center", inline:"center"});
+    }
   }));
 }
 

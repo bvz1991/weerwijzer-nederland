@@ -71,8 +71,20 @@
         <div id="forecast" class="forecast-grid"></div>
       </section>
 
+      <section class="section hourly-preview-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PER UUR</p>
+            <h2 id="hourlyPreviewTitle">Komende uren</h2>
+          </div>
+          <button class="text-button" data-open-tab="hours">Alle uren</button>
+        </div>
+        <div id="hourlyStrip" class="hourly-strip" aria-label="Weer voor de komende uren"></div>
+      </section>
+
       <nav class="tabs" aria-label="Weeronderdelen">
         <button class="tab active" data-tab="rain">Neerslag</button>
+        <button class="tab" data-tab="hours">Per uur</button>
         <button class="tab" data-tab="alerts">Alarm</button>
         <button class="tab" data-tab="details">Details</button>
         <button class="tab" data-tab="air">Lucht</button>
@@ -83,6 +95,17 @@
         <h2>Neerslag komende 24 uur</h2>
         <div id="rainChart" class="rain-chart" aria-label="Neerslagverwachting"></div>
         <div class="chart-legend"><span><i class="bar-key"></i> Neerslag</span><span><i class="chance-key"></i> Kans</span></div>
+      </section>
+
+      <section id="hours" class="tab-panel">
+        <div class="hourly-panel-heading">
+          <div>
+            <p class="eyebrow">UURVERWACHTING</p>
+            <h2>Temperatuur en neerslag per uur</h2>
+          </div>
+          <span class="soft">Komende 5 dagen</span>
+        </div>
+        <div id="hourlyDays" class="hourly-days"></div>
       </section>
 
       <section id="alerts" class="tab-panel">

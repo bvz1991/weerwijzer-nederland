@@ -7,6 +7,10 @@ Deze versie is een Progressive Web App (PWA). Eén en dezelfde app werkt:
 - geïnstalleerd op iPhone en iPad;
 - als normale website in iedere moderne browser.
 
+De app toont actueel weer, vijfdaagse verwachtingen, een snelle strook voor de
+komende uren en uitgebreide uurtabellen met temperatuur, gevoelstemperatuur,
+neerslag, regenkans, wind en windstoten.
+
 ## Gratis online publiceren
 
 Het pakket is voorbereid voor Vercel, omdat de kleine alarmfeed daar eveneens
