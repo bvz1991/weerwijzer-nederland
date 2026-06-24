@@ -1,0 +1,36 @@
+{
+  "name": "WeerWijzer Nederland",
+  "short_name": "WeerWijzer",
+  "description": "Actueel weer, vijfdaagse verwachting, neerslag, luchtkwaliteit en officiële waarschuwingen.",
+  "lang": "nl-NL",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#06111d",
+  "theme_color": "#071a2b",
+  "categories": ["weather", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mijn locatie",
+      "short_name": "Mijn locatie",
+      "url": "./?location=1",
+      "icons": [{"src":"icons/icon-192.png","sizes":"192x192"}]
+    }
+  ]
+}

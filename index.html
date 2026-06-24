@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071a2b">
+  <meta name="description" content="Actueel weer, vijfdaagse verwachting en officiële waarschuwingen voor Nederland.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WeerWijzer">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>WeerWijzer Nederland</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="WeerWijzer Nederland">
+        <span class="brand-mark">🌦️</span>
+        <span>WeerWijzer <b>Nederland</b></span>
+      </a>
+      <button id="installButton" class="install-button hidden">Installeer app</button>
+    </header>
+
+    <main>
+      <section class="search-panel" aria-label="Plaats kiezen">
+        <div class="search-row">
+          <label class="search-box">
+            <span>⌕</span>
+            <input id="searchInput" type="search" autocomplete="off" placeholder="Zoek een plaats…">
+          </label>
+          <button id="locationButton" class="location-button" title="Gebruik mijn locatie" aria-label="Gebruik mijn locatie">⌖</button>
+        </div>
+        <div id="searchResults" class="search-results hidden"></div>
+      </section>
+
+      <div id="status" class="status hidden" role="status"></div>
+
+      <section id="currentCard" class="current-card skeleton" aria-live="polite">
+        <div>
+          <p class="eyebrow">WEER NU</p>
+          <h1 id="placeName">Weer laden…</h1>
+          <p id="updatedTime" class="soft"></p>
+          <div class="temperature-row">
+            <span id="currentTemp" class="temperature">--°</span>
+            <div>
+              <strong id="currentDescription">Even geduld</strong>
+              <span id="feelsLike" class="soft block"></span>
+            </div>
+          </div>
+        </div>
+        <div id="currentIcon" class="current-icon">🌦️</div>
+        <div class="current-stats">
+          <div><span>Neerslag</span><strong id="rainNow">--</strong></div>
+          <div><span>Wind</span><strong id="windNow">--</strong></div>
+          <div><span>Windstoten</span><strong id="gustNow">--</strong></div>
+          <div><span>Luchtvochtigheid</span><strong id="humidityNow">--</strong></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">VOORUITZICHT</p>
+            <h2>De komende 5 dagen</h2>
+          </div>
+          <button id="refreshButton" class="icon-button" aria-label="Vernieuwen" title="Vernieuwen">↻</button>
+        </div>
+        <div id="forecast" class="forecast-grid"></div>
+      </section>
+
+      <nav class="tabs" aria-label="Weeronderdelen">
+        <button class="tab active" data-tab="rain">Neerslag</button>
+        <button class="tab" data-tab="alerts">Alarm</button>
+        <button class="tab" data-tab="details">Details</button>
+        <button class="tab" data-tab="air">Lucht</button>
+        <button class="tab" data-tab="sources">Bronnen</button>
+      </nav>
+
+      <section id="rain" class="tab-panel active">
+        <h2>Neerslag komende 24 uur</h2>
+        <div id="rainChart" class="rain-chart" aria-label="Neerslagverwachting"></div>
+        <div class="chart-legend"><span><i class="bar-key"></i> Neerslag</span><span><i class="chance-key"></i> Kans</span></div>
+      </section>
+
+      <section id="alerts" class="tab-panel">
+        <h2>Officiële waarschuwingen</h2>
+        <div id="alertList"><div class="notice">Waarschuwingen laden…</div></div>
+        <div class="button-stack">
+          <a class="primary-link" href="https://www.knmi.nl/nederland-nu/weer/waarschuwingen" target="_blank" rel="noopener">Bekijk KNMI-waarschuwingen ↗</a>
+          <a class="secondary-link" href="https://www.meteoalarm.org/" target="_blank" rel="noopener">Bekijk Europese waarschuwingen ↗</a>
+        </div>
+      </section>
+
+      <section id="details" class="tab-panel">
+        <h2>Meer weergegevens</h2>
+        <div id="detailsGrid" class="details-grid"></div>
+      </section>
+
+      <section id="air" class="tab-panel">
+        <h2>Luchtkwaliteit en pollen</h2>
+        <div id="airContent"><div class="notice">Luchtkwaliteit laden…</div></div>
+      </section>
+
+      <section id="sources" class="tab-panel">
+        <h2>Betrouwbare bronnen</h2>
+        <div class="source-grid">
+          <a href="https://www.knmi.nl/" target="_blank" rel="noopener"><b>KNMI</b><span>Waarschuwingen en Nederlands weer</span></a>
+          <a href="https://www.meteoalarm.org/" target="_blank" rel="noopener"><b>Meteoalarm</b><span>Europese officiële alarmen</span></a>
+          <a href="https://www.buienradar.nl/" target="_blank" rel="noopener"><b>Buienradar</b><span>Radar en neerslag</span></a>
+          <a href="https://www.weer.nl/" target="_blank" rel="noopener"><b>Weer.nl</b><span>Verwachtingen en achtergronden</span></a>
+          <a href="https://nos.nl/weer" target="_blank" rel="noopener"><b>NOS Weer</b><span>Weerbericht en nieuws</span></a>
+          <a href="https://www.luchtmeetnet.nl/" target="_blank" rel="noopener"><b>Luchtmeetnet</b><span>Officiële Nederlandse metingen</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Open data van Open-Meteo en Meteoalarm</span>
+      <span>Weerverwachtingen kunnen veranderen</span>
+    </footer>
+  </div>
+
+  <dialog id="iosInstallDialog">
+    <button class="dialog-close" aria-label="Sluiten">×</button>
+    <h2>Installeer op iPhone of iPad</h2>
+    <p>Open deze pagina in Safari, tik op <b>Delen</b> <span class="share-icon">⇧</span> en kies <b>Zet op beginscherm</b>.</p>
+  </dialog>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
